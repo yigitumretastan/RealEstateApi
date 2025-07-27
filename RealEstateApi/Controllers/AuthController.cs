@@ -6,14 +6,9 @@
 
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(AuthService authService) : ControllerBase
     {
-        private readonly AuthService _authService;
-
-        public AuthController(AuthService authService)
-        {
-            _authService = authService;
-        }
+        private readonly AuthService _authService = authService;
 
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegisterDto dto)
@@ -35,5 +30,4 @@
             return Ok(result);
         }
     }
-
 }

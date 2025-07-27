@@ -1,82 +1,68 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Real_Estate_Api.Persistence;
-using Real_Estate_Api.Services;
 using Real_Estate_Api.Helpers;
 using Real_Estate_Api.Middlewares;
+using Real_Estate_Api.Persistence;
+using Real_Estate_Api.Services;
 using Real_Estate_Api.Mappings;
-using AutoMapper; 
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Entity Framework - DbContext
+// Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(Real_Estate_Api.Mappings.MappingProfile));
+// AutoMapper - Düzeltilmiþ konfigürasyon
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// Application Services
+// Services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ListingService>();
 builder.Services.AddScoped<JwtTokenHelper>();
 
-builder.Services.AddAuthorization();
+// JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
-// Swagger/OpenAPI
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Real Estate API",
-        Version = "v1",
-        Description = "Emlak API'si - Gayrimenkul listelerini yönetmek için RESTful API"
-    });
-});
-
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Development ortamýnda Swagger gösterimi
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Real Estate API v1");
-        c.RoutePrefix = string.Empty; // Swagger root'ta açýlýr
-    });
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
-// CORS
-app.UseCors("AllowAll");
+// JWT Middleware
+app.UseMiddleware<JwtMiddleware>();
 
-// Authentication & Authorization KALDIRILDI
-// app.UseAuthentication();
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Opsiyonel özel middleware (gerekirse)
-// app.UseMiddleware<JwtMiddleware>();
-
-// Controller routing
 app.MapControllers();
 
 app.Run();
