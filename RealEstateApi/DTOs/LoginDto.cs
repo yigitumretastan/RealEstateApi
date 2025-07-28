@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Real_Estate_Api.DTOs
+namespace RealEstateApi.DTOs
 {
     public class LoginDto
     {

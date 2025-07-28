@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Real_Estate_Api.DTOs;
-using Real_Estate_Api.Models;
+using RealEstateApi.DTOs;
+using RealEstateApi.Models;
 
-namespace Real_Estate_Api.Mappings
+namespace RealEstateApi.Mappings
 {
     public class MappingProfile : Profile
     {

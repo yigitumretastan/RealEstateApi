@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Real_Estate_Api.DTOs
+namespace RealEstateApi.DTOs
 {
     public class CreateListingDto
     {
@@ -19,9 +19,23 @@ namespace Real_Estate_Api.DTOs
         [MaxLength(50, ErrorMessage = "Şehir adı en fazla 50 karakter olabilir")]
         public string City { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Oda sayısı gereklidir")]
-        [Range(1, 20, ErrorMessage = "Oda sayısı 1 ile 20 arasında olmalıdır")]
-        public int RoomCount { get; set; }
+        [Required(ErrorMessage = "İlçe gereklidir")]
+        [MinLength(2, ErrorMessage = "İlçe adı en az 2 karakter olmalıdır")]
+        [MaxLength(50, ErrorMessage = "İlçe adı en fazla 50 karakter olabilir")]
+        public string District { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Sokak bilgisi gereklidir")]
+        [MinLength(2, ErrorMessage = "Sokak adı en az 2 karakter olmalıdır")]
+        [MaxLength(100, ErrorMessage = "Sokak adı en fazla 100 karakter olabilir")]
+        public string Street { get; set; } = string.Empty;
+
+        [MaxLength(10, ErrorMessage = "Daire numarası en fazla 10 karakter olabilir")]
+        public string? ApartmentNumber { get; set; }
+
+        [Required(ErrorMessage = "Oda tipi gereklidir")]
+        [RegularExpression(@"^(1\+1|2\+1|3\+1|4\+1|5\+1|6\+1|Dublex|Triplex|Villa|Stüdyo)$",
+            ErrorMessage = "Geçerli oda tipleri: 1+1, 2+1, 3+1, 4+1, 5+1, 6+1, Dublex, Triplex, Villa, Stüdyo")]
+        public string RoomType { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Fiyat gereklidir")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalıdır")]

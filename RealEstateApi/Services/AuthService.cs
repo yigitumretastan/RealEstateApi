@@ -1,9 +1,9 @@
-﻿namespace Real_Estate_Api.Services
+﻿namespace RealEstateApi.Services
 {
-    using Real_Estate_Api.DTOs;
-    using Real_Estate_Api.Models;
-    using Real_Estate_Api.Persistence;
-    using Real_Estate_Api.Helpers;
+    using RealEstateApi.DTOs;
+    using RealEstateApi.Models;
+    using RealEstateApi.Persistence;
+    using RealEstateApi.Helpers;
 
     public class AuthService
     {

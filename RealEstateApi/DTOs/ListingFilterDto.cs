@@ -1,4 +1,4 @@
-﻿namespace Real_Estate_Api.DTOs
+﻿namespace RealEstateApi.DTOs
 {
     public class ListingFilterDto
     {

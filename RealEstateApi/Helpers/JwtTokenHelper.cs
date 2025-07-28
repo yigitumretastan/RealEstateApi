@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Real_Estate_Api.Models;
+using RealEstateApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Real_Estate_Api.Helpers
+namespace RealEstateApi.Helpers
 {
     public class JwtTokenHelper
     {

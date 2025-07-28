@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Real_Estate_Api.Models;
+using RealEstateApi.Models;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
-namespace Real_Estate_Api.Persistence
+namespace RealEstateApi.Persistence
 {
     public class ApplicationDbContext : DbContext
     {

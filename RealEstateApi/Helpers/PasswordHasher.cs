@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Real_Estate_Api.Helpers
+namespace RealEstateApi.Helpers
 {
     public static class PasswordHasher
     {

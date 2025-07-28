@@ -1,4 +1,4 @@
-﻿namespace Real_Estate_Api.Models
+﻿namespace RealEstateApi.Models
 {
     public class User
     {

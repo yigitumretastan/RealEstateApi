@@ -1,11 +1,11 @@
-﻿using Real_Estate_Api.Persistence;
+﻿using RealEstateApi.Persistence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Real_Estate_Api.Middlewares
+namespace RealEstateApi.Middlewares
 {
     public class JwtMiddleware
     {
