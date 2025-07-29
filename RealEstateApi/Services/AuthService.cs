@@ -4,6 +4,7 @@
     using RealEstateApi.Models;
     using RealEstateApi.Persistence;
     using RealEstateApi.Helpers;
+    using System.Text.RegularExpressions;
 
     public class AuthService
     {
@@ -16,6 +17,38 @@
             _jwt = jwt;
         }
 
+        private bool ValidatePassword(string password, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+            {
+                errorMessage = "Password must be at least 8 characters long.";
+                return false;
+            }
+            if (!Regex.IsMatch(password, @"[A-Z]"))
+            {
+                errorMessage = "Password must contain at least one uppercase letter.";
+                return false;
+            }
+            if (!Regex.IsMatch(password, @"[a-z]"))
+            {
+                errorMessage = "Password must contain at least one lowercase letter.";
+                return false;
+            }
+            if (!Regex.IsMatch(password, @"\d"))
+            {
+                errorMessage = "Password must contain at least one digit.";
+                return false;
+            }
+            if (!Regex.IsMatch(password, @"[\W_]"))
+            {
+                errorMessage = "Password must contain at least one special character.";
+                return false;
+            }
+
+            return true;
+        }
 
         public List<User> GetAllUsers()
         {
@@ -27,6 +60,11 @@
             if (_db.Users.Any(u => u.Email == dto.Email))
             {
                 return new AuthResult(false, "Email is already in use.");
+            }
+
+            if (!ValidatePassword(dto.Password, out var passwordError))
+            {
+                return new AuthResult(false, passwordError);
             }
 
             var user = new User
@@ -82,6 +120,10 @@
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
+                if (!ValidatePassword(dto.Password, out var passwordError))
+                {
+                    return new AuthResult(false, passwordError);
+                }
                 user.PasswordHash = PasswordHasher.Hash(dto.Password);
             }
 

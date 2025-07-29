@@ -93,6 +93,11 @@
 
         public Listing CreateListing(CreateListingDto dto, ClaimsPrincipal userClaims)
         {
+            if (dto.Price <= 0)
+            {
+                throw new ArgumentException("Price must be greater than zero.");
+            }
+
             var userId = int.Parse(userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
             var listing = new Listing
@@ -148,7 +153,12 @@
                 listing.RoomType = dto.RoomType;
 
             if (dto.Price.HasValue)
+            {
+                if (dto.Price.Value <= 0)
+                    return new ServiceResult(false, "Price must be greater than zero.");
+
                 listing.Price = dto.Price.Value;
+            }
 
             listing.UpdatedAt = DateTime.UtcNow;
 
@@ -156,7 +166,6 @@
 
             return new ServiceResult(true, "Listing updated successfully");
         }
-
         public ServiceResult DeleteListing(int id, ClaimsPrincipal userClaims)
         {
             var listing = _db.Listings.FirstOrDefault(x => x.Id == id);
