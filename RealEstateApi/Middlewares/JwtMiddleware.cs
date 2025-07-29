@@ -51,7 +51,6 @@ namespace RealEstateApi.Middlewares
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var userId = int.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
 
-                // Kullanıcıyı veritabanından getir
                 var user = db.Users.Find(userId);
                 if (user != null)
                 {
@@ -67,8 +66,8 @@ namespace RealEstateApi.Middlewares
                 }
             }
             catch
-            {
-                // token geçersiz: kullanıcı eklenmez
+            { 
+                Console.WriteLine($"JWT validation failed: {ex.Message}"); 
             }
         }
     }
