@@ -163,12 +163,13 @@
             }
         }
 
+
         [HttpGet("sorted-by-price")]
-        public IActionResult GetListingsSortedByPrice()
+        public IActionResult GetListingsSortedByPrice([FromQuery] bool descending = false)
         {
             try
             {
-                var listings = _listingService.GetListingsOrderedByPrice();
+                var listings = _listingService.GetListingsOrderedByPrice(descending);
                 return Ok(new { success = true, data = listings });
             }
             catch (Exception ex)
@@ -177,6 +178,7 @@
                 return StatusCode(500, new { success = false, message = "Server Error", error = ex.Message });
             }
         }
+
 
     }
 }

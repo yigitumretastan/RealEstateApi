@@ -173,10 +173,15 @@
             return new ServiceResult(true, "Listing deleted successfully");
         }
 
-        public List<ListingDto> GetListingsOrderedByPrice()
+        public List<ListingDto> GetListingsOrderedByPrice(bool descending)
         {
-            var listings = _db.Listings
-                .OrderBy(l => l.Price)
+            var query = _db.Listings.AsQueryable();
+
+            query = descending
+                ? query.OrderByDescending(l => l.Price)
+                : query.OrderBy(l => l.Price);
+
+            var listings = query
                 .Select(l => new ListingDto
                 {
                     Id = l.Id,
