@@ -1,4 +1,6 @@
-﻿namespace RealEstateApi.Models
+﻿using System.Text.Json.Serialization;
+
+namespace RealEstateApi.Models
 {
     public class Listing
     {
@@ -10,13 +12,13 @@
 
         public string City { get; set; } = string.Empty;
 
-        public string District { get; set; } = string.Empty; // İlçe alanı eklendi
+        public string District { get; set; } = string.Empty;
 
-        public string RoomType { get; set; } = string.Empty; // "1+1", "2+1", "3+1", "4+1", "Dublex" vb.
+        public string RoomType { get; set; } = string.Empty;
 
-        public string Street { get; set; } = string.Empty; // Sokak bilgisi
+        public string Street { get; set; } = string.Empty;
 
-        public string? ApartmentNumber { get; set; } // Daire numarası (opsiyonel)
+        public string? ApartmentNumber { get; set; }
 
         public decimal Price { get; set; }
 
@@ -24,10 +26,9 @@
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        // Foreign Key
         public int UserId { get; set; }
 
-        // Navigation property
+        [JsonIgnore]
         public User User { get; set; } = null!;
     }
 }
