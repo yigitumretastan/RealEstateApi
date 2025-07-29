@@ -19,7 +19,6 @@
         {
             var query = _db.Listings.Include(l => l.User).AsQueryable();
 
-            // Metin tabanlı arama (başlık ve açıklamada)
             if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
             {
                 var searchTerm = filter.SearchTerm.ToLower();
@@ -28,33 +27,26 @@
                     x.Description.ToLower().Contains(searchTerm));
             }
 
-            // Şehir filtresi
             if (!string.IsNullOrWhiteSpace(filter.City))
                 query = query.Where(x => x.City.ToLower() == filter.City.ToLower());
 
-            // İlçe filtresi
             if (!string.IsNullOrWhiteSpace(filter.District))
                 query = query.Where(x => x.District.ToLower() == filter.District.ToLower());
 
-            // Sokak filtresi
             if (!string.IsNullOrWhiteSpace(filter.Street))
                 query = query.Where(x => x.Street.ToLower().Contains(filter.Street.ToLower()));
 
-            // Fiyat filtreleri
             if (filter.MinPrice.HasValue)
                 query = query.Where(x => x.Price >= filter.MinPrice.Value);
 
             if (filter.MaxPrice.HasValue)
                 query = query.Where(x => x.Price <= filter.MaxPrice.Value);
 
-            // Oda tipi filtresi
             if (!string.IsNullOrWhiteSpace(filter.RoomType))
                 query = query.Where(x => x.RoomType == filter.RoomType);
 
-            // Toplam kayıt sayısı
             var totalCount = query.Count();
 
-            // Sıralama
             query = filter.SortBy?.ToLower() switch
             {
                 "price" => filter.SortOrder?.ToLower() == "desc"
@@ -66,10 +58,9 @@
                 "title" => filter.SortOrder?.ToLower() == "desc"
                     ? query.OrderByDescending(x => x.Title)
                     : query.OrderBy(x => x.Title),
-                _ => query.OrderByDescending(x => x.CreatedAt) // Varsayılan: yeni ilanlar önce
+                _ => query.OrderByDescending(x => x.CreatedAt)
             };
 
-            // Sayfalama
             var listings = query
                 .Skip((filter.Page - 1) * filter.PageSize)
                 .Take(filter.PageSize)
@@ -129,13 +120,12 @@
         {
             var listing = _db.Listings.FirstOrDefault(x => x.Id == id);
             if (listing == null)
-                return new ServiceResult(false, "İlan bulunamadı");
+                return new ServiceResult(false, "Listing not found");
 
             var userId = int.Parse(userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (listing.UserId != userId)
-                return new ServiceResult(false, "Bu ilanı düzenleme yetkiniz yok");
+                return new ServiceResult(false, "You are not authorized to edit this listing");
 
-            // Güncelleme işlemleri
             if (!string.IsNullOrWhiteSpace(dto.Title))
                 listing.Title = dto.Title;
 
@@ -164,61 +154,41 @@
 
             _db.SaveChanges();
 
-            return new ServiceResult(true, "İlan başarıyla güncellendi");
+            return new ServiceResult(true, "Listing updated successfully");
         }
 
         public ServiceResult DeleteListing(int id, ClaimsPrincipal userClaims)
         {
             var listing = _db.Listings.FirstOrDefault(x => x.Id == id);
             if (listing == null)
-                return new ServiceResult(false, "İlan bulunamadı");
+                return new ServiceResult(false, "Listing not found");
 
             var userId = int.Parse(userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (listing.UserId != userId)
-                return new ServiceResult(false, "Bu ilanı silme yetkiniz yok");
+                return new ServiceResult(false, "You are not authorized to delete this listing");
 
             _db.Listings.Remove(listing);
             _db.SaveChanges();
 
-            return new ServiceResult(true, "İlan başarıyla silindi");
+            return new ServiceResult(true, "Listing deleted successfully");
         }
 
-        // İstatistikler için yardımcı method
-        public ListingStats GetListingStats()
+        public List<ListingDto> GetListingsOrderedByPrice()
         {
-            var totalListings = _db.Listings.Count();
-            var avgPrice = _db.Listings.Any() ? _db.Listings.Average(x => (double)x.Price) : 0;
-
-            var cityStats = _db.Listings
-                .GroupBy(x => x.City)
-                .Select(g => new CityStats
+            var listings = _db.Listings
+                .OrderBy(l => l.Price)
+                .Select(l => new ListingDto
                 {
-                    City = g.Key,
-                    Count = g.Count(),
-                    AvgPrice = g.Average(x => (double)x.Price)
+                    Id = l.Id,
+                    Title = l.Title,
+                    Price = l.Price,
+                    City = l.City,
+                    Description = l.Description,
+                    CreatedAt = l.CreatedAt
                 })
-                .OrderByDescending(x => x.Count)
-                .Take(10)
                 .ToList();
 
-            var roomTypeStats = _db.Listings
-                .GroupBy(x => x.RoomType)
-                .Select(g => new RoomTypeStats
-                {
-                    RoomType = g.Key,
-                    Count = g.Count(),
-                    AvgPrice = g.Average(x => (double)x.Price)
-                })
-                .OrderByDescending(x => x.Count)
-                .ToList();
-
-            return new ListingStats
-            {
-                TotalListings = totalListings,
-                AveragePrice = avgPrice,
-                TopCities = cityStats,
-                RoomTypeStats = roomTypeStats
-            };
+            return listings;
         }
     }
 

@@ -17,130 +17,166 @@
             _listingService = listingService;
         }
 
-        /// <summary>
-        /// Tüm ilanları filtreli olarak getir
-        /// </summary>
         [HttpGet]
         public IActionResult GetAll([FromQuery] ListingFilterDto filter)
         {
-            var result = _listingService.GetFilteredListings(filter);
-            return Ok(new
+            try
             {
-                success = true,
-                data = result.Listings,
-                pagination = new
+                var result = _listingService.GetFilteredListings(filter);
+                return Ok(new
                 {
-                    currentPage = result.Page,
-                    pageSize = result.PageSize,
-                    totalPages = result.TotalPages,
-                    totalCount = result.TotalCount
-                }
-            });
+                    success = true,
+                    data = result.Listings,
+                    pagination = new
+                    {
+                        currentPage = result.Page,
+                        pageSize = result.PageSize,
+                        totalPages = result.TotalPages,
+                        totalCount = result.TotalCount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ GetAll Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server error", error = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// Belirli bir ilanı ID ile getir
-        /// </summary>
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var listing = _listingService.GetListingById(id);
-            if (listing == null)
-                return NotFound(new { success = false, message = "İlan bulunamadı" });
+            try
+            {
+                var listing = _listingService.GetListingById(id);
+                if (listing == null)
+                    return NotFound(new { success = false, message = "Listing not found"});
 
-            return Ok(new { success = true, data = listing });
+                return Ok(new { success = true, data = listing });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ GetById Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server error", error = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// Kullanıcının kendi ilanlarını getir
-        /// </summary>
         [Authorize]
         [HttpGet("my-listings")]
         public IActionResult GetMyListings()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var listings = _listingService.GetUserListings(userId);
-            return Ok(new { success = true, data = listings });
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var listings = _listingService.GetUserListings(userId);
+                return Ok(new { success = true, data = listings });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ GetMyListings Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server Error", error = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// Yeni ilan oluştur
-        /// </summary>
         [Authorize]
         [HttpPost]
         public IActionResult Create([FromBody] CreateListingDto dto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(new
+                if (!ModelState.IsValid)
                 {
-                    success = false,
-                    message = "Geçersiz veriler",
-                    errors = errors
-                });
-            }
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
 
-            var listing = _listingService.CreateListing(dto, User);
-            return CreatedAtAction(nameof(GetById), new { id = listing.Id },
-                new { success = true, message = "İlan başarıyla oluşturuldu", data = listing });
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid data",
+                        errors = errors
+                    });
+                }
+
+                var listing = _listingService.CreateListing(dto, User);
+                return CreatedAtAction(nameof(GetById), new { id = listing.Id },
+                    new { success = true, message = "Listing created successfully", data = listing });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Create Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server error", error = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// İlan güncelle
-        /// </summary>
         [Authorize]
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] UpdateListingDto dto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(new
+                if (!ModelState.IsValid)
                 {
-                    success = false,
-                    message = "Geçersiz veriler",
-                    errors = errors
-                });
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid data",
+                        errors = errors
+                    });
+                }
+
+                var result = _listingService.UpdateListing(id, dto, User);
+                if (!result.Success)
+                    return BadRequest(new { success = false, message = result.Message });
+
+                return Ok(new { success = true, message = result.Message });
             }
-
-            var result = _listingService.UpdateListing(id, dto, User);
-            if (!result.Success)
-                return BadRequest(new { success = false, message = result.Message });
-
-            return Ok(new { success = true, message = result.Message });
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Update Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server Error", error = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// İlan sil
-        /// </summary>
         [Authorize]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var result = _listingService.DeleteListing(id, User);
-            if (!result.Success)
-                return BadRequest(new { success = false, message = result.Message });
+            try
+            {
+                var result = _listingService.DeleteListing(id, User);
+                if (!result.Success)
+                    return BadRequest(new { success = false, message = result.Message });
 
-            return Ok(new { success = true, message = result.Message });
+                return Ok(new { success = true, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Delete Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server Error", error = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// İlan istatistiklerini getir
-        /// </summary>
-        [HttpGet("stats")]
-        public IActionResult GetStats()
+        [HttpGet("sorted-by-price")]
+        public IActionResult GetListingsSortedByPrice()
         {
-            var stats = _listingService.GetListingStats();
-            return Ok(new { success = true, data = stats });
+            try
+            {
+                var listings = _listingService.GetListingsOrderedByPrice();
+                return Ok(new { success = true, data = listings });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ GetListingsSortedByPrice Error: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Server Error", error = ex.Message });
+            }
         }
+
     }
 }
