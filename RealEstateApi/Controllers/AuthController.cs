@@ -4,6 +4,7 @@
     using RealEstateApi.DTOs;
     using RealEstateApi.Services;
     using System.Security.Claims;
+    using Microsoft.AspNetCore.Authorization;
 
     [ApiController]
     [Route("api/[controller]")]
@@ -16,6 +17,17 @@
         {
             _authService = authService;
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Get User
+        /// </summary>
+        [Authorize]
+        [HttpGet("users")]
+        public IActionResult GetUsers()
+        {
+            var users = _authService.GetAllUsers();
+            return Ok(users);
         }
 
         /// <summary>

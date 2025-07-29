@@ -16,6 +16,12 @@
             _jwt = jwt;
         }
 
+
+        public List<User> GetAllUsers()
+        {
+            return _db.Users.ToList();
+        }
+
         public AuthResult Register(RegisterDto dto)
         {
             if (_db.Users.Any(u => u.Email == dto.Email))
