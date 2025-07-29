@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Mvc;
     using RealEstateApi.DTOs;
     using RealEstateApi.Services;
+    using System.Security.Claims;
 
     [ApiController]
     [Route("api/[controller]")]
@@ -18,7 +19,7 @@
         }
 
         /// <summary>
-        /// Kullanıcı kaydı
+        /// User registration
         /// </summary>
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegisterDto dto)
@@ -72,7 +73,7 @@
         }
 
         /// <summary>
-        /// Kullanıcı girişi
+        /// User login
         /// </summary>
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginDto dto)
@@ -126,17 +127,104 @@
         }
 
         /// <summary>
-        /// API durumu kontrolü
+        /// Delete user by ID
         /// </summary>
-        [HttpGet("health")]
-        public IActionResult Health()
+        [HttpDelete("delete/{id}")]
+        public IActionResult DeleteUser(int id)
         {
-            return Ok(new
+            try
             {
-                success = true,
-                message = "API çalışıyor",
-                timestamp = DateTime.UtcNow
-            });
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+                if (userId != id)
+                {
+                    return Forbid();
+                }
+
+                var result = _authService.DeleteUserById(id);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = result.Message
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting user. ID: {Id}", id);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "A server error occurred"
+                });
+            }
+        }
+        /// <summary>
+        /// Update user by ID
+        /// </summary>
+        [HttpPut("update/{id}")]
+        public IActionResult UpdateUser(int id, [FromBody] UpdateUserDto dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+                if (userId != id)
+                {
+                    return Forbid();
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input data",
+                        errors = errors
+                    });
+                }
+
+                var result = _authService.UpdateUser(id, dto);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = result.Message
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating user. ID: {Id}", id);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An unexpected server error occurred"
+                });
+            }
+
         }
     }
 }

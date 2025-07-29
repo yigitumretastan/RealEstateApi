@@ -48,6 +48,42 @@
             var token = _jwt.GenerateToken(user);
             return new AuthResult(true, "Login successful.", token);
         }
+
+        public AuthResult DeleteUserById(int id)
+        {
+            var user = _db.Users.Find(id);
+            if (user == null)
+            {
+                return new AuthResult(false, "User not found.");
+            }
+
+            _db.Users.Remove(user);
+            _db.SaveChanges();
+
+            return new AuthResult(true, "User deleted.");
+        }
+
+        public AuthResult UpdateUser(int id, UpdateUserDto dto)
+        {
+            var user = _db.Users.Find(id);
+            if (user == null)
+            {
+                return new AuthResult(false, "User not found.");
+            }
+
+            user.FullName = dto.FullName ?? user.FullName;
+            user.Email = dto.Email ?? user.Email;
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                user.PasswordHash = PasswordHasher.Hash(dto.Password);
+            }
+
+            _db.Users.Update(user);
+            _db.SaveChanges();
+
+            return new AuthResult(true, "User updated.");
+        }
     }
 
     public class AuthResult
@@ -63,5 +99,4 @@
             Token = token;
         }
     }
-
 }
