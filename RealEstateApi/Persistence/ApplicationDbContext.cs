@@ -14,7 +14,7 @@ namespace RealEstateApi.Persistence
 
         public DbSet<User> Users { get; set; }
         public DbSet<Listing> Listings { get; set; }
-
+        public DbSet<Payment> Payments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
