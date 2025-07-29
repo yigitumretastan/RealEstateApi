@@ -65,10 +65,10 @@ namespace RealEstateApi.Middlewares
                     context.User = new ClaimsPrincipal(identity);
                 }
             }
-            catch
+            catch (Exception ex)
             { 
                 Console.WriteLine($"JWT validation failed: {ex.Message}"); 
             }
         }
     }
-}
+} 
