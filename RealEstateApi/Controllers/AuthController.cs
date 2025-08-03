@@ -183,7 +183,7 @@
         /// <summary>
         /// Update user by ID
         /// </summary>
-        [HttpPut("update/{id}")]
+        [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, [FromBody] UpdateUserDto dto)
         {
             try

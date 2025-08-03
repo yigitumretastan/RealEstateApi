@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstateApi.Models
 {
@@ -8,9 +9,25 @@ namespace RealEstateApi.Models
 
         public int UserId { get; set; }
 
+        public int ListingId { get; set; }
+
         public decimal Amount { get; set; }
 
+        [Required]
         public string PaymentMethod { get; set; } = string.Empty;
+
+    
+        public string? MaskedCardNumber { get; set; }
+
+        public string? CardHolderName { get; set; }
+
+        public string? ExpiryDate { get; set; }
+
+        public string? BillingAddress { get; set; }
+
+        public string? BillingCity { get; set; }
+
+        public string? PostalCode { get; set; }
 
         public string? Description { get; set; }
 
@@ -19,5 +36,9 @@ namespace RealEstateApi.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsSuccessful { get; set; }
+
+        public string? FailureReason { get; set; } 
+        public User? User { get; set; }
+        public Listing? Listing { get; set; }
     }
 }
