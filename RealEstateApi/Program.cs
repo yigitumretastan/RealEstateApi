@@ -64,6 +64,9 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+    c.SchemaFilter<ListingSchemaFilter>();
+    c.SchemaFilter<UserSchemaFilter>();
+    c.SchemaFilter<PaymentSchemaFilter>();
 });
 
 
